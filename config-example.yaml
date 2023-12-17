@@ -34,6 +34,12 @@ mqtt:                     # MQTT disabled if url & prefix both blank
   ha_discovery_prefix: homeassistant/sensor   # topic prefix for Home Assistant MQTT Discovery
   state:     energy/inverter/state  # topic for state
 
+influxdb:
+  url:                    # InfluxDB Url + port (e.g. http://192.168.1.200:8086)
+  token:                  # InfluxDB User Token
+  org:                    # InfluxDB Organization
+  bucket: sofar-solar     # InfluxDB Bucket (all data will be stored in a single measurement called "Sofar Logger")
+
 otlp:                     # OTLP disabled if both urls blank
   grpc:
     url:                  # URL for gRPC OTLP server e.g. 0.0.0.0:4317
