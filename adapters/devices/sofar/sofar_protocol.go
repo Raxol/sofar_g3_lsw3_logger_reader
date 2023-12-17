@@ -15,6 +15,8 @@ type field struct {
 type registerRange struct {
 	start       int
 	end         int
+	name		string
+	device		string
 	replyFields []field
 }
 
@@ -41,6 +43,18 @@ func GetAllRegisterNames() []string {
 	return result
 }
 
+func GetMatchFromFullList(name string) (string, string, string, string) {
+	for _, rr := range allRegisterRanges {
+		for _, entry := range rr.replyFields {
+			if entry.name == name {
+				return rr.name, rr.device, entry.unit, entry.factor
+			}
+		}
+	}
+	
+	return "", "", "", ""
+}
+
 func getDiscoveryFields(nameFilter func(string) bool) []ports.DiscoveryField {
 	result := make([]ports.DiscoveryField, 0)
 	for _, rr := range allRegisterRanges {
@@ -56,6 +70,8 @@ func getDiscoveryFields(nameFilter func(string) bool) []ports.DiscoveryField {
 var rrSystemInfo = registerRange{
 	start: 0x400,
 	end:   0x43a,
+	name:  "system-info",
+	device:"inverter",
 	replyFields: []field{
 		{0x0404, "SysState", "U16", "", ""},
 		{0x0405, "Fault1", "U16", "", ""},
@@ -117,6 +133,8 @@ var rrSystemInfo = registerRange{
 var rrEnergyTodayTotals = registerRange{
 	start: 0x680,
 	end:   0x69B,
+	name:  "energy-totals",
+	device:"inverter",
 	replyFields: []field{
 		{0x684, "PV_Generation_Today", "U32", "0.01", "kWh"},
 		{0x686, "PV_Generation_Total", "U32", "0.1", "kWh"},
@@ -136,6 +154,8 @@ var rrEnergyTodayTotals = registerRange{
 var rrPVOutput = registerRange{
 	start: 0x580,
 	end:   0x589,
+	name:  "pv-input",
+	device:"pv",
 	replyFields: []field{
 		{0x0584, "Voltage_PV1", "U16", "0.1", "V"},
 		{0x0585, "Current_PV1", "U16", "0.01", "A"},
@@ -148,6 +168,8 @@ var rrPVOutput = registerRange{
 var rrGridOutput = registerRange{
 	start: 0x480,
 	end:   0x4bc,
+	name:  "on-grid",
+	device:"inverter",
 	replyFields: []field{
 		{0x0484, "Frequency_Grid", "U16", "0.01", "Hz"},
 		{0x0485, "ActivePower_Output_Total", "I16", "0.01", "kW"},
@@ -212,6 +234,8 @@ var rrGridOutput = registerRange{
 var rrBatOutput = registerRange{
 	start: 0x600,
 	end:   0x611,
+	name:  "battery-info",
+	device:"bms",
 	replyFields: []field{
 		{0x0604, "Voltage_Bat1", "U16", "0.1", "V"},
 		{0x0605, "Current_Bat1", "I16", "0.01", "A"},
@@ -233,6 +257,8 @@ var rrBatOutput = registerRange{
 var rrRatio = registerRange{
 	start: 0x1030,
 	end:   0x103D,
+	name:  "basic-parameter",
+	device:"inverter",
 	replyFields: []field{
 		{0x1039, "PV_Generation_Ratio", "U16", "0.001", ""},
 		{0x103A, "Energy_Purchase_Ratio", "U16", "0.001", ""},

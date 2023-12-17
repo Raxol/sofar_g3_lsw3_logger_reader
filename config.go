@@ -7,6 +7,7 @@ import (
 	"github.com/kubaceg/sofar_g3_lsw3_logger_reader/adapters/export/otlp"
 
 	"github.com/kubaceg/sofar_g3_lsw3_logger_reader/adapters/export/mosquitto"
+	"github.com/kubaceg/sofar_g3_lsw3_logger_reader/adapters/export/influxdb"
 	"gopkg.in/yaml.v2"
 )
 
@@ -19,8 +20,9 @@ type Config struct {
 		AttrWhiteList []string `yaml:"attrWhiteList"`
 		AttrBlackList []string `yaml:"attrBlackList"`
 	} `yaml:"inverter"`
-	Mqtt mosquitto.MqttConfig `yaml:"mqtt"`
-	Otlp otlp.Config          `yaml:"otlp"`
+	Mqtt mosquitto.MqttConfig        `yaml:"mqtt"`
+	Otlp otlp.Config                 `yaml:"otlp"`
+	InfluxDB influxdb.InfluxDBConfig `yaml:"influxdb"`
 }
 
 func (c *Config) validate() error {

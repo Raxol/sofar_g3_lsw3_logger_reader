@@ -14,6 +14,7 @@ import (
 	"github.com/kubaceg/sofar_g3_lsw3_logger_reader/adapters/devices/sofar"
 	"github.com/kubaceg/sofar_g3_lsw3_logger_reader/adapters/export/mosquitto"
 	"github.com/kubaceg/sofar_g3_lsw3_logger_reader/adapters/export/otlp"
+	"github.com/kubaceg/sofar_g3_lsw3_logger_reader/adapters/export/influxdb"
 	"github.com/kubaceg/sofar_g3_lsw3_logger_reader/ports"
 )
 
@@ -25,9 +26,11 @@ var (
 	mqtt   ports.DatabaseWithListener
 	device ports.Device
 	telem  *otlp.Service
+	influx *influxdb.Influx
 
 	hasMQTT bool
 	hasOTLP bool
+	hasInfluxDB bool
 )
 
 func initialize() {
@@ -39,6 +42,7 @@ func initialize() {
 
 	hasMQTT = config.Mqtt.Url != "" && config.Mqtt.Prefix != ""
 	hasOTLP = config.Otlp.Grpc.Url != "" || config.Otlp.Http.Url != ""
+	hasInfluxDB = config.InfluxDB.Url != ""
 
 	if isSerialPort(config.Inverter.Port) {
 		port = serial.New(config.Inverter.Port, 2400, 8, gser.NoParity, gser.OneStopBit)
@@ -61,6 +65,14 @@ func initialize() {
 		if err != nil {
 			log.Fatalf("error initializating otlp connection: %s", err)
 		}
+	}
+	
+	if hasInfluxDB {
+		influx, err = influxdb.New(&config.InfluxDB)
+		if err != nil {
+			log.Fatalf("InfluxDB connection failed: %s", err)
+		}
+
 	}
 
 	device = sofar.NewSofarLogger(config.Inverter.LoggerSerial, port, config.Inverter.AttrWhiteList, config.Inverter.AttrBlackList)
@@ -119,6 +131,13 @@ func main() {
 				log.Println("measurements pushed via OLTP")
 			}
 
+		}
+		
+		if hasInfluxDB {
+			err := influx.InsertRecord(measurements)
+			if err != nil {
+				log.Printf("Error on InfluxDB write: %s", err)
+			}
 		}
 
 		time.Sleep(time.Duration(config.Inverter.ReadInterval) * time.Second)
